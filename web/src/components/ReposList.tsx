@@ -1,33 +1,33 @@
-let repos = [
-    {
-        name: "Test Repo",
-        url: "https://github.com/mohamedelhefni/offlinegit.git",
-        date: Date.now()
-    },
-    {
-        name: "Test Repo 2",
-        url: "https://github.com/mohamedelhefni/offlinegit.git",
-        date: Date.now()
-    },
+import { useState } from "react"
+import { Repo } from "../types/common"
+import { get, set } from 'idb-keyval';
 
-]
 
-function RepoItem({ repo }: any) {
+export default function ReposList() {
+    let [repos, setRepos] = useState(Array<Repo>)
+
+    get("repositories").then(val => {
+        if (val == undefined) {
+            set("repositories", [])
+            setRepos([])
+        }
+        setRepos(val)
+    })
+
+
     return (
-        <div className="w-full p-2 border border-gray-200 transition hover:bg-gray-300 hover:text-zinc-800  mx-auto rounded">
-            {repo.name}
+        <div className="flex flex-col gap-3">
+            {repos.map((repo, idx) => (
+                <RepoItem key={idx} {...repo} />
+            ))}
         </div>
     )
 }
 
-
-
-export default function ReposList() {
+function RepoItem({ Name, Slug, CreatedAt }: Repo) {
     return (
-        <div className="flex flex-col gap-3">
-            {repos.map(repo => (
-                <RepoItem repo={repo} />
-            ))}
+        <div className="w-full p-2 border border-gray-200 transition hover:bg-gray-300 hover:text-zinc-800  mx-auto rounded">
+            {Name}
         </div>
     )
 }
