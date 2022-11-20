@@ -1,19 +1,13 @@
+import { get, set } from "idb-keyval"
 import { useState } from "react"
 import { Repo } from "../types/common"
-import { get, set } from 'idb-keyval';
 
 
-export default function ReposList() {
-    let [repos, setRepos] = useState(Array<Repo>)
+interface RepoListProps {
+    repos: Array<Repo>
+}
 
-    get("repositories").then(val => {
-        if (val == undefined) {
-            set("repositories", [])
-            setRepos([])
-        }
-        setRepos(val)
-    })
-
+export default function ReposList({ repos }: RepoListProps) {
 
     return (
         <div className="flex flex-col gap-3">
@@ -24,9 +18,16 @@ export default function ReposList() {
     )
 }
 
+function deleteRepo(Name: string): void {
+    get("repositories").then((val: Array<Repo>) => {
+        val = val.filter(v => v.Name != Name)
+        set("repositories", val)
+    })
+}
+
 function RepoItem({ Name, Slug, CreatedAt }: Repo) {
     return (
-        <div className="w-full p-2 border border-gray-200 transition hover:bg-gray-300 hover:text-zinc-800  mx-auto rounded">
+        <div onDoubleClick={() => { deleteRepo(Name) }} className="w-full p-2 border border-gray-200 transition hover:bg-gray-300 hover:text-zinc-800  mx-auto rounded select-none cursor-pointer">
             {Name}
         </div>
     )

@@ -38,7 +38,7 @@ func dirTree(path string) ([]*File, error) {
 		file := File{
 			IsDir:     f.IsDir(),
 			Name:      f.Name(),
-			Path:      filePath,
+			Path:      filePath[8:], // 8 chars of -> ./clones/
 			Childrens: []*File{},
 		}
 		if !f.IsDir() {

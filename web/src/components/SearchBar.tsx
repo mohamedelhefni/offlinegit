@@ -1,11 +1,26 @@
-import React, { useState } from "react"
+import { get, set } from "idb-keyval"
+import React, { Dispatch, useState } from "react"
 import { BiSearchAlt } from "react-icons/bi"
+import { Repo } from "../types/common"
 
-export default function SearchBar() {
-    let [repoUrl, setRepoUrl] = useState("")
+
+interface SearchBarProps {
+    setRepos: Dispatch<React.SetStateAction<Repo[]>>
+}
+
+
+
+export default function SearchBar({ setRepos }: SearchBarProps) {
+
+    let [repoUrl, setRepoUrl] = useState<string>("")
 
     function downloadRepo(e: React.SyntheticEvent): void {
         e.preventDefault()
+        setRepos(old => [...old, { Name: repoUrl, Slug: "test-slug", CreatedAt: Date.now() }])
+        get('repositories').then(val => {
+            console.log(val)
+            set('repositories', [...val, { Name: repoUrl }])
+        })
     }
 
 
