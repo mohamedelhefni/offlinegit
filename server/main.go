@@ -1,15 +1,15 @@
 package main
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -64,6 +64,12 @@ func dirTree(path string) ([]*File, error) {
 	return mainFiles, nil
 }
 
+func Md5Hash(text string) string {
+	hasher := md5.New()
+	hasher.Write([]byte(text))
+	return hex.EncodeToString(hasher.Sum(nil))
+}
+
 func main() {
 	r := gin.Default()
 
@@ -81,16 +87,19 @@ func main() {
 			c.Status(http.StatusBadRequest)
 			return
 		}
-		rnd := strconv.Itoa(int(time.Now().Unix()))
-		cmd := exec.Command("git", "clone", "--depth", "1", r.Url, "./clones/"+rnd)
-		err = cmd.Run()
-		if err != nil {
-			fmt.Printf(err.Error())
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Repo is not correct"})
-			return
+
+		hash := Md5Hash(r.Url)
+		if _, err := os.Stat("./clones/" + hash); os.IsNotExist(err) {
+			cmd := exec.Command("git", "clone", "--depth", "1", r.Url, "./clones/"+hash)
+			err = cmd.Run()
+			if err != nil {
+				fmt.Printf(err.Error())
+				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Repo is not correct"})
+				return
+			}
+			os.RemoveAll("./clones/" + hash + "/.git")
 		}
-		os.RemoveAll("./clones/" + rnd + "/.git")
-		json, err := dirTree("./clones/" + rnd)
+		json, err := dirTree("./clones/" + hash)
 		if err != nil {
 			fmt.Printf(err.Error())
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "failed to parse repo"})
