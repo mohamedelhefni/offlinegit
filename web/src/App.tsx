@@ -6,6 +6,8 @@ import {
 } from "react-router-dom";
 import Home from './pages/Home';
 import Layout from './pages/Layout';
+import Repo from "./components/Repo"
+import { NoMatch } from './components/NoMatch';
 
 function App() {
 
@@ -14,7 +16,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
-
+          <Route path='/repo/:repoId' element={<Repo />} />
+          <Route path="*" element={<NoMatch />} />
         </Route>
       </Routes>
     </BrowserRouter>

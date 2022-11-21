@@ -1,17 +1,16 @@
 export interface Repo {
-    Url: string
-    Name: string
-    Slug: string
-    CreatedAt: Number
+    url: string
+    name: string
+    slug: string
+    createdAt: Number
 }
 
 
 export interface File {
-    IsDir: Boolean
-    Name: string
-    Path: string
-    Extension: string
-    Content: string
-    Childrens: File[]
-
+    isDir: Boolean
+    name: string
+    path: string
+    extension: string
+    content: string
+    childrens: File[]
 }

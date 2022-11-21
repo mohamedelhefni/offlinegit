@@ -3,7 +3,7 @@ import React, { Dispatch, useState } from "react"
 import toast from "react-hot-toast"
 import { BiSearchAlt } from "react-icons/bi"
 import { Repo } from "../types/common"
-import { addRepo } from "../utils/db"
+import { addRepo, storeRepo } from "../utils/db"
 import { createNewRepo } from "../utils/repo"
 import { isGitUrl } from "../utils/validation"
 
@@ -32,11 +32,11 @@ export default function SearchBar({ setRepos }: SearchBarProps) {
             },
             body: JSON.stringify({ url: repoUrl })
         }).then(res => res.json()).then(data => {
-            console.log(data)
-            let repo = createNewRepo(repoUrl);
+            let repo = createNewRepo(repoUrl, data.hash);
             setRepos(old => [...old, repo])
             addRepo(repo)
             setRepoUrl("")
+            storeRepo(data.hash, data.data.files)
             toast.success("Repository Added Successfully")
             toast.dismiss(toastLoading)
         }).catch(err => {

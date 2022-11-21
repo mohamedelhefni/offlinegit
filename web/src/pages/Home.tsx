@@ -1,17 +1,22 @@
 import { VscGithubAction } from "react-icons/vsc"
-import { get, set } from 'idb-keyval';
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import SearchBar from '../components/SearchBar'
 import ReposList from '../components/ReposList'
 import { Repo } from '../types/common'
-import { getRepos } from "../utils/db";
+import { getRepos, initRepos } from "../utils/db";
 
 
 export default function Home() {
     let [repos, setRepos] = useState<Array<Repo>>([])
-    getRepos().then(val => {
-        setRepos(val)
-    })
+
+    useEffect(() => {
+        getRepos().then(val => {
+            if (!val) {
+               initRepos()
+            }
+            setRepos(val)
+        })
+    }, [])
 
     return (
         <>

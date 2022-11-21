@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 
 export default function Layout() {
     return (
-        <div className="App">
+        <div className="App container mx-auto">
             <Outlet />
             <Toaster
                 position="bottom-center"

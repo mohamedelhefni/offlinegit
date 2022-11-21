@@ -1,5 +1,5 @@
 import { get, set } from "idb-keyval"
-import { Repo } from "../types/common"
+import { File, Repo } from "../types/common"
 import { createNewRepo } from "./repo"
 
 export function addRepo(repo: Repo) {
@@ -8,6 +8,21 @@ export function addRepo(repo: Repo) {
     })
 }
 
+export function initRepos() {
+    set("repositories", [])
+}
+
 export function getRepos(): Promise<any> {
     return get("repositories")
 }
+
+
+export function storeRepo(hash: string, files: File[]): void {
+    set(hash, files)
+}
+
+export function getRepo(hash: string): Promise<any> {
+    return get(hash)
+}
+
+
