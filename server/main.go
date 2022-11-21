@@ -38,12 +38,13 @@ func dirTree(path string) ([]*File, error) {
 		file := File{
 			IsDir:     f.IsDir(),
 			Name:      f.Name(),
-			Path:      filePath[8:], // 8 chars of -> ./clones/
+			Path:      filePath[9:], // 8 chars of -> ./clones/
 			Childrens: []*File{},
 		}
 		if !f.IsDir() {
 			fileExts := strings.Split(f.Name(), ".")
-			file.Extension = fileExts[len(fileExts)-1]
+			extension := fileExts[len(fileExts)-1]
+			file.Extension = extension
 			content, err := ioutil.ReadFile(filePath)
 			if err != nil {
 				fmt.Println(err.Error())
@@ -70,9 +71,25 @@ func Md5Hash(text string) string {
 	return hex.EncodeToString(hasher.Sum(nil))
 }
 
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	}
+}
+
 func main() {
 	r := gin.Default()
-
+	r.Use(CORSMiddleware())
 	r.POST("/repo", func(c *gin.Context) {
 		var r RepoRequest
 		var err error
@@ -105,7 +122,7 @@ func main() {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "failed to parse repo"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"data": json})
+		c.JSON(http.StatusOK, gin.H{"data": gin.H{"files": json}, "hash": hash})
 	})
 
 	r.Run()

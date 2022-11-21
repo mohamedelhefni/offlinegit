@@ -10,7 +10,7 @@ interface RepoListProps {
 export default function ReposList({ repos }: RepoListProps) {
 
     return (
-        <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ">
             {repos.map((repo, idx) => (
                 <RepoItem key={idx} {...repo} />
             ))}

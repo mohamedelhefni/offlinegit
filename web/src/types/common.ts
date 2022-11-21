@@ -1,4 +1,5 @@
 export interface Repo {
+    Url: string
     Name: string
     Slug: string
     CreatedAt: Number

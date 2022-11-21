@@ -1,7 +1,11 @@
 import { get, set } from "idb-keyval"
 import React, { Dispatch, useState } from "react"
+import toast from "react-hot-toast"
 import { BiSearchAlt } from "react-icons/bi"
 import { Repo } from "../types/common"
+import { addRepo } from "../utils/db"
+import { createNewRepo } from "../utils/repo"
+import { isGitUrl } from "../utils/validation"
 
 
 interface SearchBarProps {
@@ -16,10 +20,29 @@ export default function SearchBar({ setRepos }: SearchBarProps) {
 
     function downloadRepo(e: React.SyntheticEvent): void {
         e.preventDefault()
-        setRepos(old => [...old, { Name: repoUrl, Slug: "test-slug", CreatedAt: Date.now() }])
-        get('repositories').then(val => {
-            console.log(val)
-            set('repositories', [...val, { Name: repoUrl }])
+        if (!isGitUrl(repoUrl)) {
+            toast.error("please enter valid git url")
+            return
+        }
+        const toastLoading = toast.loading("Getting the repo ⏳ ")
+        fetch(`${import.meta.env.VITE_API_URL}/repo`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ url: repoUrl })
+        }).then(res => res.json()).then(data => {
+            console.log(data)
+            let repo = createNewRepo(repoUrl);
+            setRepos(old => [...old, repo])
+            addRepo(repo)
+            setRepoUrl("")
+            toast.success("Repository Added Successfully")
+            toast.dismiss(toastLoading)
+        }).catch(err => {
+            console.error(err)
+            toast.error("something went wrong")
+            toast.dismiss(toastLoading)
         })
     }
 
@@ -27,7 +50,7 @@ export default function SearchBar({ setRepos }: SearchBarProps) {
     return (
         <>
             <form className="flex items-center relative w-full " onSubmit={downloadRepo}>
-                <input type="text" className=" w-full pl-11 p-2 px-4 rounded-md border  border-gray-300 text-lg bg-transparent  " placeholder="Repository Url" onChange={e => setRepoUrl(e.target.value)} />
+                <input type="text" className=" w-full pl-11 p-2 px-4 rounded-md border  border-gray-300 text-lg bg-transparent  " placeholder="Repository Url" value={repoUrl} onChange={e => setRepoUrl(e.target.value)} />
                 <button>
                     <BiSearchAlt className="absolute top-2.5 left-3" size={27} />
                 </button>

@@ -4,18 +4,14 @@ import { useState } from 'react'
 import SearchBar from '../components/SearchBar'
 import ReposList from '../components/ReposList'
 import { Repo } from '../types/common'
+import { getRepos } from "../utils/db";
 
 
 export default function Home() {
     let [repos, setRepos] = useState<Array<Repo>>([])
-
-    get("repositories").then(val => {
-        if (val == undefined) {
-            set("repositories", [])
-        }
+    getRepos().then(val => {
         setRepos(val)
     })
-
 
     return (
         <>
