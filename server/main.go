@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -107,6 +108,10 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 func main() {
+
+	gin.DisableConsoleColor()
+	f, _ := os.Create("gin.log")
+	gin.DefaultWriter = io.MultiWriter(f)
 	r := gin.Default()
 	r.Use(CORSMiddleware())
 	r.POST("/repo", func(c *gin.Context) {
@@ -123,7 +128,7 @@ func main() {
 			c.Status(http.StatusBadRequest)
 			return
 		}
-
+		fmt.Println(r.Url)
 		hash := Md5Hash(r.Url)
 		if _, err := os.Stat("./clones/" + hash); os.IsNotExist(err) {
 			cmd := exec.Command("git", "clone", "--depth", "1", r.Url, "./clones/"+hash)

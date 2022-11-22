@@ -13,7 +13,6 @@ export default function Repo() {
     useEffect(() => {
         let pathParams = params['*'] ? '/' + params['*'] : '';
         let fullPath = String(params.repoId) + pathParams
-
         getRepo(String(fullPath)).then(data => {
 
             if (!data) {

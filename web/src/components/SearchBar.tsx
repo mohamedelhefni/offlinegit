@@ -1,4 +1,4 @@
-import { get, set } from "idb-keyval"
+import { TiWarning } from "react-icons/ti"
 import React, { Dispatch, useState } from "react"
 import toast from "react-hot-toast"
 import { BiSearchAlt } from "react-icons/bi"
@@ -9,12 +9,13 @@ import { isGitUrl } from "../utils/validation"
 
 
 interface SearchBarProps {
+    repos: Repo[]
     setRepos: Dispatch<React.SetStateAction<Repo[]>>
 }
 
 
 
-export default function SearchBar({ setRepos }: SearchBarProps) {
+export default function SearchBar({ repos, setRepos }: SearchBarProps) {
 
     let [repoUrl, setRepoUrl] = useState<string>("")
 
@@ -22,6 +23,20 @@ export default function SearchBar({ setRepos }: SearchBarProps) {
         e.preventDefault()
         if (!isGitUrl(repoUrl)) {
             toast.error("please enter valid git url")
+            return
+        }
+        let repoExists = repos.some(repo => repo.url == repoUrl)
+        if (repoExists) {
+            toast('Repo Already exists',
+                {
+                    icon: <TiWarning color="yellow" size={25} />,
+                    style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                    },
+                }
+            )
             return
         }
         const toastLoading = toast.loading("Getting the repo ⏳ ")
@@ -38,11 +53,13 @@ export default function SearchBar({ setRepos }: SearchBarProps) {
             setRepoUrl("")
             storeRepo(data.hash, data.data.files)
             storeFiles(data.data.files)
-            toast.success("Repository Added Successfully")
-            toast.dismiss(toastLoading)
+
         }).catch(err => {
             console.error(err)
             toast.error("something went wrong")
+            toast.dismiss(toastLoading)
+        }).finally(() => {
+            toast.success("Repository Added Successfully")
             toast.dismiss(toastLoading)
         })
     }

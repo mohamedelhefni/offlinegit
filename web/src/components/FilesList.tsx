@@ -1,16 +1,21 @@
 import { FcFile, FcFolder } from "react-icons/fc"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import { File } from "../types/common"
+import { DeleteRepo } from "./DeleteRepo"
 import { Returnback } from "./ReturnBack"
 
 interface FilesListProps {
     files: Array<File>
 }
 export function FilesList({ files }: FilesListProps) {
-    const navigate = useNavigate()
+    const params = useParams()
+
     return (
         <div className="flex flex-col gap-3 my-5 px-2 md:px-0 ">
-            <Returnback />
+            <div className="flex items-cener justify-between">
+                <Returnback />
+                <DeleteRepo repoId={String(params.repoId)} />
+            </div>
             <div className="flex flex-col  border border-gray-300 rounded  divide-y">
                 {files.map((file: File) => (
                     <FileItem key={file.name} {...file} />

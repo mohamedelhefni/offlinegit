@@ -28,7 +28,7 @@ function FileContent({ name, extension, content }: File) {
             <div className="font-bold text-2xl"> {name} </div>
             {
                 imgExtensions.includes(extension) ? <RenderImage src={content} /> :
-                    <SyntaxHighlighter showLineNumbers={true} language={mapLangExtension(extension)} style={gruvboxDark}>
+                    <SyntaxHighlighter showLineNumbers={true} language={mapLangExtension(name)} style={gruvboxDark}>
                         {content}
                     </SyntaxHighlighter>
             }

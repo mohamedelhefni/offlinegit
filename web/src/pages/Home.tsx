@@ -26,7 +26,7 @@ export default function Home() {
             </h1>
             <div className="flex flex-col gap-4 container mx-auto px-2 md:px-0">
                 <div className="flex items-center justify-center">
-                    <SearchBar setRepos={setRepos} />
+                    <SearchBar repos={repos} setRepos={setRepos} />
                 </div>
 
                 {repos && <ReposList repos={repos} />}
