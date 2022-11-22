@@ -12,11 +12,11 @@ export default function Home() {
     useEffect(() => {
         getRepos().then(val => {
             if (!val) {
-               initRepos()
+                initRepos()
             }
             setRepos(val)
         })
-    }, [])
+    }, [repos])
 
     return (
         <>
@@ -29,7 +29,7 @@ export default function Home() {
                     <SearchBar setRepos={setRepos} />
                 </div>
 
-                <ReposList repos={repos} />
+                {repos && <ReposList repos={repos} />}
 
             </div>
 

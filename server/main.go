@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/md5"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"io/ioutil"
@@ -14,6 +15,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var imgExtensions []string = []string{"jpg", "jpeg", "png", "gif"}
+
 type RepoRequest struct {
 	Url string `json:"url,required"`
 }
@@ -25,6 +28,16 @@ type File struct {
 	Extension string  `json:"extension,omitempty"`
 	Content   string  `json:"content,omitempty"`
 	Childrens []*File `json:"childrens,omitempty"`
+}
+
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+
+	return false
 }
 
 func dirTree(path string) ([]*File, error) {
@@ -49,7 +62,13 @@ func dirTree(path string) ([]*File, error) {
 			if err != nil {
 				fmt.Println(err.Error())
 			}
-			file.Content = string(content)
+			if contains(imgExtensions, extension) {
+				base := base64.RawStdEncoding.EncodeToString(content)
+				file.Content = fmt.Sprintf("data:image/%s;base64,%s", extension, base)
+			} else {
+				file.Content = string(content)
+			}
+
 		}
 
 		if f.IsDir() {
