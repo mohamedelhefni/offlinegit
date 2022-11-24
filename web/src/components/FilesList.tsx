@@ -1,15 +1,34 @@
-import { BiBookContent } from "react-icons/bi"
+import { useEffect, useState } from "react"
+import ReactMarkdown from 'react-markdown'
 import { FcFile, FcFolder } from "react-icons/fc"
 import { Link, useParams } from "react-router-dom"
 import { File } from "../types/common"
+import { getFile } from "../utils/db"
 import { DeleteRepo } from "./DeleteRepo"
 import { Returnback } from "./ReturnBack"
 
 interface FilesListProps {
     files: Array<File>
 }
+
 export function FilesList({ files }: FilesListProps) {
     const params = useParams()
+    const [hasReadme, setHasReadme] = useState(false)
+    const [readme, setReadme] = useState<File>()
+    const readmeFile = files.find(file => file.name.toUpperCase() == "README.MD")
+
+
+    useEffect(() => {
+        if (readmeFile) {
+            setHasReadme(true)
+            getFile(readmeFile.path).then((data: File) => {
+                setReadme(data)
+            })
+        } else {
+            setHasReadme(false)
+        }
+    }, [params, files])
+
 
     return (
         <div className="flex flex-col gap-3 my-5 px-2 md:px-0 ">
@@ -22,6 +41,7 @@ export function FilesList({ files }: FilesListProps) {
                     <FileItem key={file.name} {...file} />
                 ))}
             </div>
+            {hasReadme && <RenderReadMe {...readme} />}
         </div>
     )
 }
@@ -34,5 +54,18 @@ function FileItem({ name, isDir, path }: File) {
                 <span>{name}</span>
             </div>
         </Link>
+    )
+}
+
+function RenderReadMe({ content }: File) {
+    return (
+        <div className="w-full mt-3 p-6 rounded border border-gray-300">
+            <div className="prose lg:prose-xl prose-invert ">
+                <ReactMarkdown>
+                    {content}
+                </ReactMarkdown>
+            </div>
+
+        </div>
     )
 }

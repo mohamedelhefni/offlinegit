@@ -69,4 +69,10 @@ export function getRepo(hash: string): Promise<any> {
     return get(hash)
 }
 
+export function getFile(path: string): Promise<any> {
+    return get(path)
+}
+
+
+
 

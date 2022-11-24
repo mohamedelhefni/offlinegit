@@ -46,20 +46,22 @@ export default function SearchBar({ repos, setRepos }: SearchBarProps) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ url: repoUrl })
-        }).then(res => res.json()).then(data => {
+        }).then(res => {
+            if (res.status == 400) {
+                throw new Error("something went wrong");
+            }
+            return res.json()
+        }).then(data => {
             let repo = createNewRepo(repoUrl, data.hash);
             setRepos(old => [...old, repo])
             addRepo(repo)
             setRepoUrl("")
             storeRepo(data.hash, data.data.files)
             storeFiles(data.data.files)
-
-        }).catch(err => {
-            console.error(err)
-            toast.error("something went wrong")
-            toast.dismiss(toastLoading)
-        }).finally(() => {
             toast.success("Repository Added Successfully")
+        }).catch(err => {
+            toast.error(err.message)
+        }).finally(() => {
             toast.dismiss(toastLoading)
         })
     }

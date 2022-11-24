@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, redirect } from "react-router-dom";
+import { useParams, redirect, useNavigate } from "react-router-dom";
 import { getRepo } from "../utils/db";
 import { FileRender } from "./FileRender";
 import { FilesList } from "./FilesList";
@@ -9,16 +9,14 @@ export default function Repo() {
     let [repoFiles, setRepoFiles] = useState<Array<File>>([])
     let [file, setFile] = useState<File>()
     let [isDir, setIsDir] = useState<Boolean>(false)
-
+    const navigate = useNavigate()
     useEffect(() => {
         let pathParams = params['*'] ? '/' + params['*'] : '';
         let fullPath = String(params.repoId) + pathParams
         getRepo(String(fullPath)).then(data => {
 
             if (!data) {
-                // TODO: fix this bug
-                console.log("not found")
-                return redirect("/") // didn't work
+                navigate("/")
             }
 
             if (data.isDir) {
