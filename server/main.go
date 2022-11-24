@@ -13,7 +13,10 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 var imgExtensions []string = []string{"jpg", "jpeg", "png", "gif"}
@@ -108,33 +111,36 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 func main() {
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
 	gin.DisableConsoleColor()
+
 	f, _ := os.Create("gin.log")
 	gin.DefaultWriter = io.MultiWriter(f)
 	r := gin.Default()
+	r.Use(gzip.Gzip(gzip.DefaultCompression))
 	r.Use(CORSMiddleware())
 	r.POST("/repo", func(c *gin.Context) {
 		var r RepoRequest
 		var err error
 		if err := c.BindJSON(&r); err != nil {
-			fmt.Printf(err.Error())
+			log.Err(err).Msg("failed to parse request")
 			c.Status(http.StatusBadRequest)
 			return
 		}
 		_, err = url.Parse(r.Url)
 		if err != nil {
-			fmt.Printf(err.Error())
+			log.Err(err).Msg("failed to parse url")
 			c.Status(http.StatusBadRequest)
 			return
 		}
-		fmt.Println(r.Url)
+		log.Debug().Str("Url", r.Url).Send()
 		hash := Md5Hash(r.Url)
 		if _, err := os.Stat("./clones/" + hash); os.IsNotExist(err) {
 			cmd := exec.Command("git", "clone", "--depth", "1", r.Url, "./clones/"+hash)
 			err = cmd.Run()
 			if err != nil {
-				fmt.Printf(err.Error())
+				log.Err(err).Msg("failed to clone repo")
 				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Repo is not correct"})
 				return
 			}
@@ -142,7 +148,7 @@ func main() {
 		}
 		json, err := dirTree("./clones/" + hash)
 		if err != nil {
-			fmt.Printf(err.Error())
+			log.Err(err).Msg("failed to extract dir tree")
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "failed to parse repo"})
 			return
 		}
