@@ -26,12 +26,20 @@ function deleteRepo(Name: string): void {
     })
 }
 
-function RepoItem({ name, slug, createdAt }: Repo) {
+function RepoItem({ name, url, slug, createdAt }: Repo) {
     return (
 
-        <Link to={"/repo/" + slug} className="" >
-            <div onDoubleClick={() => { deleteRepo(name) }} className="w-full p-2 border border-gray-200 transition hover:bg-gray-300 hover:text-zinc-800  mx-auto rounded select-none cursor-pointer">
-                {name}
+        <Link to={"/repo/" + slug} className="flex flex-col" >
+            <div onDoubleClick={() => { deleteRepo(name) }} className="w-full p-3 border border-gray-200 transition hover:bg-gray-300 hover:text-zinc-800  mx-auto rounded select-none cursor-pointer">
+                <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-2xl capitalize">
+                        {name}
+                    </h3>
+                    <span className="text-muted text-sm">{new Date(createdAt).toLocaleDateString()}</span>
+                </div>
+                <div className="url">
+                    <span className="text-muted text-sm">{url}</span>
+                </div>
             </div>
         </Link>
     )

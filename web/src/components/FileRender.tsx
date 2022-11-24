@@ -26,11 +26,15 @@ function FileContent({ name, extension, content }: File) {
     return (
         <div className="flex flex-col gap-2">
             <div className="font-bold text-2xl"> {name} </div>
+
+
             {
+
                 imgExtensions.includes(extension) ? <RenderImage src={content} /> :
-                    <SyntaxHighlighter showLineNumbers={true} language={mapLangExtension(name)} style={gruvboxDark}>
-                        {content}
-                    </SyntaxHighlighter>
+                    content && Number((content.length / (1024 * 1024)).toFixed(1)) < .5 ?
+                        <SyntaxHighlighter showLineNumbers={true} language={mapLangExtension(name)} style={gruvboxDark}>
+                            {content}
+                        </SyntaxHighlighter> : <p className="font-bold p-2 rounded border border-gray-300 my-2">file is large to render</p>
             }
         </div>
     )

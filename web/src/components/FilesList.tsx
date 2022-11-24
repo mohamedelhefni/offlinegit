@@ -1,3 +1,4 @@
+import { BiBookContent } from "react-icons/bi"
 import { FcFile, FcFolder } from "react-icons/fc"
 import { Link, useParams } from "react-router-dom"
 import { File } from "../types/common"
