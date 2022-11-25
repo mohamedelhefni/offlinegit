@@ -23,6 +23,7 @@ export default function Layout() {
                     // Default options for specific types
                     success: {
                         duration: 3000,
+                        // @ts-ignore
                         theme: {
                             primary: 'green',
                             secondary: 'black',

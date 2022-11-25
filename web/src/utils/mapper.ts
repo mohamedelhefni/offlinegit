@@ -602,9 +602,12 @@ const fileNameIcons = {
 
 export function mapLangExtension(name: string) {
     return (
+        // @ts-ignore
         fileNameIcons[name] ||
+        // @ts-ignore
         twoFileExtensionIcons[name ? name.split('.').slice(-2).join('.') : ''] ||
-        fileExtensionIcons[name ? name.split('.').pop().toLowerCase() : ''] ||
+        // @ts-ignore
+        fileExtensionIcons[name ? name?.split('.')?.pop()?.toLowerCase() : ''] ||
         ''
     );
 }

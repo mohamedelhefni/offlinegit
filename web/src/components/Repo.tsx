@@ -35,6 +35,8 @@ export default function Repo() {
 
     return (
         <div>
+
+            {/* @ts-ignore  */}
             {isDir ? <FilesList files={repoFiles} /> : <FileRender file={file} />}
         </div>
     );

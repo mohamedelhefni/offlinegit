@@ -35,6 +35,7 @@ function RepoItem({ name, url, slug, createdAt }: Repo) {
                     <h3 className="font-bold text-2xl capitalize">
                         {name}
                     </h3>
+                    {/* @ts-ignore  */}
                     <span className="text-muted text-sm">{new Date(createdAt).toLocaleDateString()}</span>
                 </div>
                 <div className="url">

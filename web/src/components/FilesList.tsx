@@ -7,6 +7,8 @@ import { getFile } from "../utils/db"
 import { DeleteRepo } from "./DeleteRepo"
 import { Returnback } from "./ReturnBack"
 
+
+{/* @ts-ignore  */ }
 interface FilesListProps {
     files: Array<File>
 }
@@ -41,6 +43,8 @@ export function FilesList({ files }: FilesListProps) {
                     <FileItem key={file.name} {...file} />
                 ))}
             </div>
+
+            {/* @ts-ignore  */}
             {hasReadme && <RenderReadMe {...readme} />}
         </div>
     )

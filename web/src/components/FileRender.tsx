@@ -6,6 +6,7 @@ import { mapLangExtension } from "../utils/mapper";
 
 
 
+/* @ts-ignore  */
 interface FileRenderProps {
     file: File
 }
