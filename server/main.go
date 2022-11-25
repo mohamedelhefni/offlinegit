@@ -1,97 +1,19 @@
 package main
 
 import (
-	"crypto/md5"
-	"encoding/base64"
-	"encoding/hex"
-	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
+	"offgit/types"
+	"offgit/utils"
 	"os"
 	"os/exec"
-	"strings"
 
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
-
-var imgExtensions []string = []string{"jpg", "jpeg", "png", "gif"}
-
-type RepoRequest struct {
-	Url string `json:"url,required"`
-}
-
-type File struct {
-	IsDir     bool    `json:"isDir"`
-	Name      string  `json:"name,omitempty"`
-	Path      string  `json:"path,omitempty"`
-	Extension string  `json:"extension,omitempty"`
-	Content   string  `json:"content,omitempty"`
-	Childrens []*File `json:"childrens,omitempty"`
-}
-
-func contains(s []string, str string) bool {
-	for _, v := range s {
-		if v == str {
-			return true
-		}
-	}
-
-	return false
-}
-
-func dirTree(path string) ([]*File, error) {
-	var mainFiles []*File
-	files, err := os.ReadDir(path)
-	if err != nil {
-		return []*File{}, err
-	}
-	for _, f := range files {
-		filePath := fmt.Sprintf("%s/%s", path, f.Name())
-		file := File{
-			IsDir:     f.IsDir(),
-			Name:      f.Name(),
-			Path:      filePath[9:], // 8 chars of -> ./clones/
-			Childrens: []*File{},
-		}
-		if !f.IsDir() {
-			fileExts := strings.Split(f.Name(), ".")
-			extension := fileExts[len(fileExts)-1]
-			file.Extension = extension
-			content, err := ioutil.ReadFile(filePath)
-			if err != nil {
-				fmt.Println(err.Error())
-			}
-			if contains(imgExtensions, extension) {
-				base := base64.RawStdEncoding.EncodeToString(content)
-				file.Content = fmt.Sprintf("data:image/%s;base64,%s", extension, base)
-			} else {
-				file.Content = string(content)
-			}
-
-		}
-
-		if f.IsDir() {
-			nested, err := dirTree(path + "/" + f.Name())
-			if err != nil {
-				fmt.Println(err.Error())
-			}
-			file.Childrens = nested
-		}
-
-		mainFiles = append(mainFiles, &file)
-	}
-	return mainFiles, nil
-}
-
-func Md5Hash(text string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(text))
-	return hex.EncodeToString(hasher.Sum(nil))
-}
 
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -111,14 +33,18 @@ func CORSMiddleware() gin.HandlerFunc {
 
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-
+	// Disable Console Color, you don't need console color when writing the logs to file.
 	gin.DisableConsoleColor()
+
+	// Logging to a file.
+	f, _ := os.Create("gin.log")
+	gin.DefaultWriter = io.MultiWriter(f)
 
 	r := gin.Default()
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 	r.Use(CORSMiddleware())
 	r.POST("/repo", func(c *gin.Context) {
-		var r RepoRequest
+		var r types.RepoRequest
 		var err error
 		if err := c.BindJSON(&r); err != nil {
 			log.Err(err).Msg("failed to parse request")
@@ -132,7 +58,7 @@ func main() {
 			return
 		}
 		log.Debug().Str("Url", r.Url).Send()
-		hash := Md5Hash(r.Url)
+		hash := utils.Md5Hash(r.Url)
 		if _, err := os.Stat("./clones/" + hash); os.IsNotExist(err) {
 			cmd := exec.Command("git", "clone", "--depth", "1", r.Url, "./clones/"+hash)
 			err = cmd.Run()
@@ -143,7 +69,7 @@ func main() {
 			}
 			os.RemoveAll("./clones/" + hash + "/.git")
 		}
-		json, err := dirTree("./clones/" + hash)
+		json, err := utils.DirTree("./clones/" + hash)
 		if err != nil {
 			log.Err(err).Msg("failed to extract dir tree")
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "failed to parse repo"})
