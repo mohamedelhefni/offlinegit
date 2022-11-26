@@ -13,8 +13,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const PATH = "/tmp/clones/"
-
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
@@ -51,17 +49,17 @@ func main() {
 		}
 		log.Debug().Str("Url", r.Url).Send()
 		hash := utils.Md5Hash(r.Url)
-		if _, err := os.Stat(PATH + hash); os.IsNotExist(err) {
-			cmd := exec.Command("git", "clone", "--depth", "1", r.Url, PATH+hash)
+		if _, err := os.Stat(utils.TMP_PATH + hash); os.IsNotExist(err) {
+			cmd := exec.Command("git", "clone", "--depth", "1", r.Url, utils.TMP_PATH+hash)
 			err = cmd.Run()
 			if err != nil {
 				log.Err(err).Msg("failed to clone repo")
 				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Repo is not correct"})
 				return
 			}
-			os.RemoveAll(PATH + hash + "/.git")
+			os.RemoveAll(utils.TMP_PATH + hash + "/.git")
 		}
-		json, err := utils.DirTree(PATH + hash)
+		json, err := utils.DirTree(utils.TMP_PATH + hash)
 		if err != nil {
 			log.Err(err).Msg("failed to extract dir tree")
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "failed to parse repo"})

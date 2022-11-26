@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+const TMP_PATH = "/tmp/clones/"
+
 var imgExtensions []string = []string{"jpg", "jpeg", "png", "gif"}
 
 func contains(s []string, str string) bool {
@@ -34,7 +36,7 @@ func DirTree(path string) ([]*types.File, error) {
 		file := types.File{
 			IsDir:     f.IsDir(),
 			Name:      f.Name(),
-			Path:      filePath[9:], // 8 chars of -> ./clones/
+			Path:      filePath[len(TMP_PATH):],
 			Childrens: []*types.File{},
 		}
 		if !f.IsDir() {
