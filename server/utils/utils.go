@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
 	"offgit/types"
 	"os"
 	"strings"
@@ -42,7 +41,7 @@ func DirTree(path string) ([]*types.File, error) {
 			fileExts := strings.Split(f.Name(), ".")
 			extension := fileExts[len(fileExts)-1]
 			file.Extension = extension
-			content, err := ioutil.ReadFile(filePath)
+			content, err := os.ReadFile(filePath)
 			if err != nil {
 				fmt.Println(err.Error())
 			}
