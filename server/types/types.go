@@ -1,7 +1,7 @@
 package types
 
 type RepoRequest struct {
-	Url string `json:"url,required"`
+	Url string `json:"url" binding:"required"`
 }
 
 type File struct {
