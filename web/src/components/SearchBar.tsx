@@ -39,8 +39,7 @@ export default function SearchBar({ repos, setRepos }: SearchBarProps) {
             )
             return
         }
-        const toastLoading = toast.loading("Getting the repo ⏳ ")
-        fetch(`${import.meta.env.VITE_API_URL}/repo`, {
+        const getRepoFiles = fetch(`${import.meta.env.VITE_API_URL}/repo`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
@@ -58,13 +57,16 @@ export default function SearchBar({ repos, setRepos }: SearchBarProps) {
             await storeFiles(data.data.files)
             setRepos(old => [...old, repo])
             addRepo(repo)
-        }).then(() => {
-            toast.dismiss(toastLoading)
-            toast.success("Repository Added Successfully")
         }).catch(err => {
-            toast.error(err.message)
-            toast.dismiss(toastLoading)
+            console.error(err)
         })
+
+        toast.promise(getRepoFiles, {
+            loading: "Getting the repo ⏳ ",
+            success: "Repository Added Successfully",
+            error: "something went wrong"
+        })
+
     }
 
 

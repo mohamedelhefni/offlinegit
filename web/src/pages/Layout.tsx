@@ -14,7 +14,6 @@ export default function Layout() {
                 toastOptions={{
                     // Define default options
                     className: '',
-                    duration: 5000,
                     style: {
                         background: '#363636',
                         color: '#fff',
