@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"offgit/types"
@@ -11,6 +12,7 @@ import (
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/sync/singleflight"
 )
 
 func CORSMiddleware() gin.HandlerFunc {
@@ -29,7 +31,23 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
+func handleFetchingRepo(hash, url string) func() (any, error) {
+	return func() (any, error) {
+		if _, err := os.Stat(utils.TMP_PATH + hash); os.IsNotExist(err) {
+			cmd := exec.Command("git", "clone", "--depth", "1", url, utils.TMP_PATH+hash)
+			err = cmd.Run()
+			if err != nil {
+				log.Err(err).Msg("failed to clone repo")
+				return nil, fmt.Errorf("failed to clone repo")
+			}
+			os.RemoveAll(utils.TMP_PATH + hash + "/.git")
+		}
+		return nil, nil
+	}
+}
+
 func main() {
+	group := singleflight.Group{}
 	r := gin.Default()
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 	r.Use(CORSMiddleware())
@@ -49,15 +67,9 @@ func main() {
 		}
 		log.Debug().Str("Url", r.Url).Send()
 		hash := utils.Md5Hash(r.Url)
-		if _, err := os.Stat(utils.TMP_PATH + hash); os.IsNotExist(err) {
-			cmd := exec.Command("git", "clone", "--depth", "1", r.Url, utils.TMP_PATH+hash)
-			err = cmd.Run()
-			if err != nil {
-				log.Err(err).Msg("failed to clone repo")
-				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Repo is not correct"})
-				return
-			}
-			os.RemoveAll(utils.TMP_PATH + hash + "/.git")
+		if _, err, _ = group.Do(hash, handleFetchingRepo(hash, r.Url)); err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Repo is not correct"})
+			return
 		}
 		json, err := utils.DirTree(utils.TMP_PATH + hash)
 		if err != nil {
