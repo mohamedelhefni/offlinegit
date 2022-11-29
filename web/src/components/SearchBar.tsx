@@ -58,7 +58,8 @@ export default function SearchBar({ repos, setRepos }: SearchBarProps) {
             setRepos(old => [...old, repo])
             addRepo(repo)
         }).catch(err => {
-            console.error(err)
+            console.error(err);
+            throw err;
         })
 
         toast.promise(getRepoFiles, {
