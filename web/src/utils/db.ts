@@ -24,6 +24,7 @@ export async function storeFiles(files: File[]) {
             const dir = JSON.parse(JSON.stringify(file))
             dir.childrens = dir.childrens.map((f: File) => {
                 f.content = ""
+                f.childrens = []
                 return f
             })
             await set(file.path, dir)
@@ -41,6 +42,7 @@ export function storeRepo(hash: string, files: File[]): void {
     dir.isDir = true
     dir.childrens = dir.map((f: File) => {
         f.content = ""
+        f.childrens = []
         return f
     })
     set(hash, dir)
