@@ -1,5 +1,3 @@
-import { TiThList } from "react-icons/ti";
-import { childrenToReact } from "react-markdown/lib/ast-to-react";
 
 interface trieNode {
     id: number
@@ -19,6 +17,14 @@ export class Trie {
             childrens: new Map<string, trieNode>(),
             value: null
         } as trieNode
+
+        if (!localStorage.getItem("keys")) {
+            this.persist();
+        }
+        let keys = JSON.parse(localStorage.getItem("keys") || '[]') || []
+        keys.forEach((key: string) => {
+            this.insert(key)
+        })
     }
     insertNode(key: string) {
         let node = this.root;
@@ -37,7 +43,18 @@ export class Trie {
         })
         return node
     }
-
+    dfs(node: trieNode, word: string, keys: any[]) {
+        node.childrens.forEach((child: trieNode, key: string) => {
+            if (child.isWord) keys.push(word + key)
+            this.dfs(child, word + key, keys)
+        })
+    }
+    persist() {
+        let keys = [] as any[]
+        let node = this.root;
+        this.dfs(node, "", keys)
+        localStorage.setItem("keys", JSON.stringify(keys))
+    }
     put(key: string, value: any) {
         let node = this.insertNode(key)
         let isNewValue = node.value == null
@@ -57,6 +74,7 @@ export class Trie {
             node.id = this.size;
         }
         node.isWord = true
+        node.value = node.id
         return node.id
     }
     get(key: string): any {
@@ -68,5 +86,11 @@ export class Trie {
         });
         return node?.value
     }
+    delete(key: string): boolean {
+        return true
+    }
 
+    isLeaf(node: trieNode) {
+        return node.childrens.size == 0
+    }
 }
