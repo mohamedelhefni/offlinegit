@@ -13,6 +13,7 @@ import (
 const TMP_PATH = "/tmp/clones/"
 
 var imgExtensions []string = []string{"jpg", "jpeg", "png", "gif"}
+var ignoredExtensions []string = []string{"mp4", "pdf", "pptx", "doc", "docx", "xls", "xlsx", "ppt", "odp", "odt", "out", "apk", "m4a", "mp3", "wav", "mid", "ogg", "wasm", "dex", "dey", "woff", "ttf", "otf", "gz", "sqlite", "deb"}
 
 func contains(s []string, str string) bool {
 	for _, v := range s {
@@ -20,7 +21,6 @@ func contains(s []string, str string) bool {
 			return true
 		}
 	}
-
 	return false
 }
 
@@ -47,9 +47,12 @@ func DirTree(path string) ([]*types.File, error) {
 			if err != nil {
 				fmt.Println(err.Error())
 			}
+
 			if contains(imgExtensions, extension) {
 				base := base64.RawStdEncoding.EncodeToString(content)
 				file.Content = fmt.Sprintf("data:image/%s;base64,%s", extension, base)
+			} else if contains(ignoredExtensions, extension) {
+				file.Content = "file type not supported"
 			} else {
 				file.Content = string(content)
 			}
