@@ -51,6 +51,10 @@ func main() {
 	r := gin.Default()
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 	r.Use(CORSMiddleware())
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "Hello, World!"})
+	})
+
 	r.POST("/repo", func(c *gin.Context) {
 		var r types.RepoRequest
 		var err error
